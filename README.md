@@ -1,2 +1,2 @@
 # dictionary-scraper
-A node js tool to scrape english words definitions from various sources
+A node js tool to scrape English words definitions from various sources

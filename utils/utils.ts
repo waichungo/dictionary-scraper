@@ -8,6 +8,8 @@ export class Pronunciation {
     language = ""
 }
 export class Definition {
+    source=""
+    link = ""
     description = ""
     wordType = ""
     examples: Array<String> = []

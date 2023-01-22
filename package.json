@@ -10,9 +10,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jsdom": "^20.0.1",
     "@types/node": "^18.11.18"
   },
   "dependencies": {
+    "jsdom": "^21.1.0",
     "node-fetch": "^3.3.0"
   }
 }

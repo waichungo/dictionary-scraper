@@ -11,6 +11,8 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
+            "args": ["feign"],
+            "env": {"TEST":"true"},
             "program": "${workspaceFolder}\\index.js",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"

@@ -16,16 +16,16 @@ exports.define = void 0;
 const utils_1 = require("../utils/utils");
 const jsdom_1 = __importDefault(require("jsdom"));
 const { JSDOM } = jsdom_1.default;
-//Find definition of a word from the Colins dictionary
+//Find definition of a word from the Cambridge dictionary
 function define(word) {
     return __awaiter(this, void 0, void 0, function* () {
         if (word && word.trim().length > 0) {
             word = word.trim().toLowerCase();
             const jsdom = require("jsdom");
             const { JSDOM } = jsdom;
-            var uri = `https://www.collinsdictionary.com/dictionary/english/${encodeURIComponent(word)}`;
+            var uri = `https://dictionary.cambridge.org/dictionary/english/${encodeURIComponent(word)}`;
             const options = {
-                referrer: "https://www.collinsdictionary.com/",
+                referrer: "https://dictionary.cambridge.org/",
                 includeNodeLocations: true,
                 storageQuota: 10000000,
                 userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
@@ -36,16 +36,18 @@ function define(word) {
             const dom = yield JSDOM.fromURL(uri, options);
             var definition = new utils_1.Word();
             definition.word = word;
-            dom.window.document.querySelectorAll(".dictlink").forEach((e) => {
+            Array.from(dom.window.document.querySelectorAll(".pos-header")).map((section) => section.parentElement).filter((sec) => sec.className.includes("entry-body")).forEach((e) => {
                 var description = new utils_1.Definition();
-                description.source = "Collins";
+                description.source = "Cambridge";
                 description.link = uri;
                 const pos = e.querySelector(".pos");
                 const exE = e.querySelectorAll(".type-example");
+                const thesE = e.querySelector(".thes");
+                const defE = e.querySelector(".def-block");
                 var pron = new utils_1.Pronunciation();
                 pron.ipa = e.querySelector(".pron").textContent.trim();
-                if (e.querySelector(".dictname")) {
-                    if (e.querySelector(".dictname").textContent.toLowerCase().includes("british")) {
+                if (e.querySelector(".region.dreg")) {
+                    if (e.querySelector(".region.dreg").textContent.toLowerCase().includes("uk")) {
                         pron.language = "UK";
                     }
                     else {
@@ -58,7 +60,10 @@ function define(word) {
                 description.ipa.push(pron);
                 description.wordType = decodeURIComponent(pos.textContent.trim());
                 description.description = decodeURIComponent(e.querySelector(".def").textContent.trim());
-                description.examples = !exE ? [] : Array.from(e.querySelectorAll(".type-example")).map((ex) => ex.textContent.trim());
+                description.examples = !defE ? [] : Array.from(defE.querySelectorAll(".examp")).map((ex) => ex.textContent.trim());
+                description.synonyms = !thesE ? [] : Array.from(thesE.querySelectorAll(".ref")).map((syn) => {
+                    return decodeURIComponent(syn.textContent.trim());
+                });
                 definition.definitions.push(description);
             });
             return definition;

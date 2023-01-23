@@ -9,13 +9,41 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.findDefinition = void 0;
 const collins_1 = require("./dictionary/collins");
-function findDefinition() {
+const cambridge_1 = require("./dictionary/cambridge");
+const utils_1 = require("./utils/utils");
+function findDefinition(word) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let promises = [];
+        try {
+            promises.push((0, cambridge_1.define)(word));
+        }
+        catch (error) {
+        }
+        try {
+            promises.push((0, collins_1.define)(word));
+        }
+        catch (error) {
+        }
+        var results = yield Promise.all(promises);
+        var def = new utils_1.Word();
+        def.word = word;
+        results.forEach((defE) => {
+            def.definitions = [...def.definitions, ...defE.definitions];
+        });
+        return def;
+    });
+}
+exports.findDefinition = findDefinition;
+function test() {
     return __awaiter(this, void 0, void 0, function* () {
         if (process.argv.length > 2) {
-            let def = yield (0, collins_1.define)(process.argv[2]);
+            var def = yield findDefinition(process.argv[2].trim());
             console.log(JSON.stringify(def, null, 4));
         }
     });
 }
-findDefinition();
+if (process.env.TEST) {
+    test();
+}

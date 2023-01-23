@@ -3,7 +3,7 @@ import { Definition, Pronunciation, Word } from "../utils/utils";
 
 import jsdom from "jsdom"
 const { JSDOM } = jsdom;
-//Find definition of a word from the Colins dictionary
+//Find definition of a word from the Cambridge dictionary
 export async function define(word: string) {
 
     if (word && word.trim().length > 0) {
@@ -12,9 +12,9 @@ export async function define(word: string) {
         const jsdom = require("jsdom");
         const { JSDOM } = jsdom;
 
-        var uri = `https://www.collinsdictionary.com/dictionary/english/${encodeURIComponent(word)}`
+        var uri = `https://dictionary.cambridge.org/dictionary/english/${encodeURIComponent(word)}`
         const options = {
-            referrer: "https://www.collinsdictionary.com/",
+            referrer: "https://dictionary.cambridge.org/",
             includeNodeLocations: true,
             storageQuota: 10000000,
             userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
@@ -26,18 +26,19 @@ export async function define(word: string) {
         var definition = new Word()
         definition.word = word
 
-        dom.window.document.querySelectorAll(".dictlink").forEach((e: any) => {
+        Array.from(dom.window.document.querySelectorAll(".pos-header")).map((section:any)=>section.parentElement).filter((sec:any)=>sec.className.includes("entry-body")).forEach((e: any) => {
             var description = new Definition()
-            description.source="Collins"
+            description.source="Cambridge"
             description.link=uri
             const pos = e.querySelector(".pos");
             const exE = e.querySelectorAll(".type-example")
-    
+            const thesE =  e.querySelector(".thes")
+            const defE =  e.querySelector(".def-block")
             var pron = new Pronunciation();
 
             pron.ipa = e.querySelector(".pron").textContent.trim();
-            if (e.querySelector(".dictname")) {
-                if (e.querySelector(".dictname").textContent.toLowerCase().includes("british")) {
+            if (e.querySelector(".region.dreg")) {
+                if (e.querySelector(".region.dreg").textContent.toLowerCase().includes("uk")) {
                     pron.language = "UK";
                 }
                 else {
@@ -52,8 +53,10 @@ export async function define(word: string) {
             description.description = decodeURIComponent(e.querySelector(".def").textContent.trim());
 
 
-            description.examples = !exE ? [] : Array.from(e.querySelectorAll(".type-example")).map((ex:any) => ex.textContent.trim());
-        
+            description.examples = !defE ? [] : Array.from(defE.querySelectorAll(".examp")).map((ex:any) => ex.textContent.trim());
+            description.synonyms = !thesE ? [] : Array.from(thesE.querySelectorAll(".ref")).map((syn:any) => {
+                return decodeURIComponent(syn.textContent.trim());
+            });
             definition.definitions.push(description)
 
         })
